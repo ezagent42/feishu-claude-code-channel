@@ -1,0 +1,9 @@
+node_modules/
+bun.lock
+.npmrc
+*.log
+
+# Local development tooling
+.claude/
+claude.sh
+docs/

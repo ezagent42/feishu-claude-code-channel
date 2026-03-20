@@ -1,0 +1,6 @@
+{
+  "name": "feishu",
+  "description": "Connect a Feishu bot to Claude Code",
+  "version": "0.0.1",
+  "keywords": ["feishu", "lark", "channel"]
+}
