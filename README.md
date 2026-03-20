@@ -1,116 +1,113 @@
-# Feishu
+# 飞书
 
-Connect a Feishu (Lark) bot to your Claude Code with an MCP server.
+将飞书机器人连接到 Claude Code 的 MCP 服务器。
 
-When the bot receives a message, the MCP server forwards it to Claude and provides tools to reply, react, and edit messages.
+机器人收到消息后，MCP 服务器将其转发给 Claude，并提供回复、表情回应和编辑消息的工具。
 
-## Prerequisites
+## 前置条件
 
-- [Bun](https://bun.sh) — the MCP server runs on Bun. Install with `curl -fsSL https://bun.sh/install | bash`.
+- [Bun](https://bun.sh) — MCP 服务器基于 Bun 运行。安装命令：`curl -fsSL https://bun.sh/install | bash`
 
-## Quick Setup
-> Default pairing flow for a single-user DM bot. See [ACCESS.md](./ACCESS.md) for groups and multi-user setups.
+## 快速配置
+> 默认配对流程，适用于单用户私聊机器人。群聊和多用户配置请参见 [ACCESS.md](./ACCESS.md)。
 
-**1. Create a Feishu application and bot.**
+**1. 创建飞书应用和机器人**
 
-Go to [飞书开放平台](https://open.feishu.cn) (or [Lark Developer](https://open.larksuite.com) for international) and create a new app (创建自建应用).
+前往[飞书开放平台](https://open.feishu.cn)（国际版用 [Lark Developer](https://open.larksuite.com)），创建自建应用。
 
-Navigate to **添加应用能力** and enable **机器人** (Bot).
+进入 **添加应用能力**，启用 **机器人**。
 
-**2. Configure event subscription.**
+**2. 配置事件订阅**
 
-Navigate to **事件订阅** → **事件配置**. Add the event `im.message.receive_v1` (接收消息).
+进入 **事件订阅** → **事件配置**，添加事件 `im.message.receive_v1`（接收消息）。
 
-Set the subscription method to **长连接** (Long Connection / WebSocket) — this means the bot connects outward and does not need a public URL.
+订阅方式选择 **长连接**（WebSocket）— 机器人主动外连，无需公网 IP。
 
-**3. Enable permissions.**
+**3. 开通权限**
 
-Navigate to **权限管理** and enable:
+进入 **权限管理**，开通以下权限：
 
-- `im:message` — Read messages
-- `im:message:send_as_bot` — Send messages as bot
-- `im:resource` — Access message resources (files, images)
-- `im:chat` — Access chat info
-- `im:message.reactions:write_only` — Add reactions
+- `im:message` — 读取消息
+- `im:message:send_as_bot` — 以机器人身份发送消息
+- `im:resource` — 访问消息资源（文件、图片）
+- `im:chat` — 访问会话信息
+- `im:message.reactions:write_only` — 添加表情回应
 
-**4. Get credentials.**
+**4. 获取凭证**
 
-Navigate to **凭证与基础信息**. Copy the **App ID** and **App Secret**.
+进入 **凭证与基础信息**，复制 **App ID** 和 **App Secret**。
 
-**5. Publish the app.**
+**5. 发布应用**
 
-Submit the app for review (发布应用). The tenant admin needs to approve it. For development/testing, you can use a test tenant (测试企业).
+提交应用审核（发布应用），租户管理员审批通过。开发测试可使用测试企业。
 
-**6. Install the plugin.**
+**6. 安装插件**
 
-These are Claude Code commands — run `claude` to start a session first.
+以下为 Claude Code 命令 — 先运行 `claude` 启动会话。
 
-Install the plugin:
+安装插件：
 ```
-/plugin install feishu@claude-plugins-official
+/plugin install feishu@ezagent42
 ```
 
-**7. Give the server the credentials.**
+**7. 配置凭证**
 
 ```
 /feishu:configure cli_xxxx your_app_secret
 ```
 
-Writes `FEISHU_APP_ID=...` and `FEISHU_APP_SECRET=...` to `~/.claude/channels/feishu/.env`.
+将 `FEISHU_APP_ID=...` 和 `FEISHU_APP_SECRET=...` 写入 `~/.claude/channels/feishu/.env`。
 
-For Lark international, add `--lark`:
+国际版 Lark 加 `--lark` 参数：
 ```
 /feishu:configure cli_xxxx your_app_secret --lark
 ```
 
-**8. Relaunch with the channel flag.**
+**8. 使用 channel 标志重启**
 
-The server won't connect without this — exit your session and start a new one:
+退出当前会话，使用以下命令重新启动：
 
 ```sh
-claude --channels plugin:feishu@claude-plugins-official
+claude --channels plugin:feishu@ezagent42
 ```
 
-**9. Pair.**
+**9. 配对**
 
-With Claude Code running from the previous step, DM your bot on Feishu — it replies with a pairing code. In your Claude Code session:
+启动 Claude Code 后，在飞书中私聊你的机器人 — 机器人会回复一个配对码。在 Claude Code 会话中运行：
 
 ```
 /feishu:access pair <code>
 ```
 
-Your next DM reaches the assistant.
+之后你的私聊消息就会发送给 Claude。
 
-**10. Lock it down.**
+**10. 锁定访问**
 
-Pairing is for capturing IDs. Once you're in, switch to `allowlist` so strangers don't get pairing-code replies. Ask Claude to do it, or `/feishu:access policy allowlist` directly.
+配对仅用于获取 ID。配对完成后，切换为 `allowlist` 模式以防止陌生人触发配对。让 Claude 帮你操作，或直接运行 `/feishu:access policy allowlist`。
 
-## Access control
+## 访问控制
 
-See **[ACCESS.md](./ACCESS.md)** for DM policies, group chats, mention detection, delivery config, skill commands, and the `access.json` schema.
+详见 **[ACCESS.md](./ACCESS.md)** — 包括私聊策略、群聊、提及检测、投递配置、技能命令和 `access.json` 结构。
 
-Quick reference: IDs are Feishu **open_id** strings (e.g. `ou_xxxx`). Default policy is `pairing`. Group chats are opt-in per chat_id.
+快速参考：ID 为飞书 **open_id** 格式（如 `ou_xxxx`）。默认策略为 `pairing`，群聊需按 chat_id 单独启用。
 
-## Tools exposed to the assistant
+## 提供给 Claude 的工具
 
-| Tool | Purpose |
+| 工具 | 用途 |
 | --- | --- |
-| `reply` | Send to a chat. Takes `chat_id` + `text`, optionally `reply_to` (message ID) for threading and `files` (absolute paths) for attachments — max 10 files, 25MB each. Auto-chunks; images and files sent as separate messages. Returns the sent message ID(s). |
-| `react` | Add an emoji reaction to any message by ID. Use Feishu emoji_type strings like `THUMBSUP`, not Unicode emoji. |
-| `edit_message` | Edit a message the bot previously sent. Useful for "working…" → result progress updates. Only works on the bot's own text/post messages. |
-| `fetch_messages` | Pull recent history from a chat (oldest-first). Capped at 50 per call. Each line includes the message ID so the model can `reply_to` it. |
-| `download_attachment` | Download attachments from a specific message by ID to `~/.claude/channels/feishu/inbox/`. Returns file paths + metadata. Use when `fetch_messages` shows a message has attachments. |
+| `reply` | 向会话发送消息。参数：`chat_id` + `text`，可选 `reply_to`（消息 ID，用于引用回复）和 `files`（绝对路径，用于附件）— 最多 10 个文件，每个 25MB。自动分段；图片和文件作为单独消息发送。返回已发送的消息 ID。 |
+| `react` | 对指定消息添加表情回应。使用飞书 emoji_type 字符串如 `THUMBSUP`，非 Unicode。 |
+| `edit_message` | 编辑机器人之前发送的消息。适用于"处理中…" → 结果的进度更新。仅支持机器人自己发送的文本/富文本消息。 |
+| `fetch_messages` | 获取会话的近期历史消息（按时间正序）。每次最多 50 条。每行包含消息 ID，可用于 `reply_to`。 |
+| `download_attachment` | 下载指定消息的附件到 `~/.claude/channels/feishu/inbox/`。返回文件路径和元数据。当 `fetch_messages` 显示消息有附件时使用。 |
 
-## Attachments
+## 附件
 
-Attachments are **not** auto-downloaded. The `<channel>` notification lists
-each attachment's name and type — the assistant calls
-`download_attachment(chat_id, message_id)` when it actually wants the file.
-Downloads land in `~/.claude/channels/feishu/inbox/`.
+附件 **不会** 自动下载。`<channel>` 通知会列出每个附件的名称和类型 — Claude 在需要时调用 `download_attachment(chat_id, message_id)` 下载。文件保存在 `~/.claude/channels/feishu/inbox/`。
 
-## Lark international
+## Lark 国际版
 
-Set `FEISHU_DOMAIN=https://open.larksuite.com` in `~/.claude/channels/feishu/.env`, or use the `--lark` flag when configuring:
+在 `~/.claude/channels/feishu/.env` 中设置 `FEISHU_DOMAIN=https://open.larksuite.com`，或配置时使用 `--lark` 参数：
 
 ```
 /feishu:configure cli_xxxx your_app_secret --lark
