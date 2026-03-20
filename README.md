@@ -45,8 +45,9 @@
 
 以下为 Claude Code 命令 — 先运行 `claude` 启动会话。
 
-安装插件：
+先添加市场，再安装插件：
 ```
+/plugin marketplace add ezagent42/ezagent42
 /plugin install feishu@ezagent42
 ```
 
