@@ -69,8 +69,10 @@
 退出当前会话，使用以下命令重新启动：
 
 ```sh
-claude --channels plugin:feishu@ezagent42
+claude --dangerously-load-development-channels plugin:feishu@ezagent42
 ```
+
+> **注意：** 飞书 channel 当前尚未进入 Claude Code 官方 approved channels allowlist，仅支持使用 `--dangerously-load-development-channels` 标志启动。该标志仅绕过 allowlist 检查，不跳过其他安全检查。
 
 **9. 配对**
 
